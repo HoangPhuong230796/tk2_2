@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài Trắc Nghiệm</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .question { margin-bottom: 20px; }
+        .correct { color: green; font-weight: bold; }
+        .incorrect { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Bài Trắc Nghiệm</h1>
+    <div id="quiz"></div>
+    <button onclick="submitQuiz()">Nộp Bài</button>
+    <script>
+        let quizData = [];
+
+        fetch('quiz_data.json')
+            .then(response => response.json())
+            .then(data => {
+                quizData = data;
+                renderQuiz();
+            });
+
+        function renderQuiz() {
+            const quizContainer = document.getElementById("quiz");
+            quizData.forEach((q, index) => {
+                const questionDiv = document.createElement("div");
+                questionDiv.classList.add("question");
+                questionDiv.innerHTML = `
+                    <p><strong>${index + 1}. ${q.question}</strong></p>
+                    ${Object.keys(q.options).map(option => `
+                        <label>
+                            <input type="radio" name="question${index}" value="${option}">
+                            ${option}: ${q.options[option]}
+                        </label><br>
+                    `).join('')}
+                    <p id="feedback${index}"></p>
+                `;
+                quizContainer.appendChild(questionDiv);
+            });
+        }
+
+        function submitQuiz() {
+            let score = 0;
+            quizData.forEach((q, index) => {
+                const selected = document.querySelector(`input[name="question${index}"]:checked`);
+                const feedback = document.getElementById(`feedback${index}`);
+                if (selected) {
+                    if (selected.value === q.answer) {
+                        score++;
+                        feedback.textContent = "Đúng!";
+                        feedback.classList.add("correct");
+                    } else {
+                        feedback.textContent = `Sai! Đáp án đúng là: ${q.answer}`;
+                        feedback.classList.add("incorrect");
+                    }
+                } else {
+                    feedback.textContent = "Bạn chưa chọn đáp án!";
+                    feedback.classList.add("incorrect");
+                }
+            });
+            alert(`Bạn đã trả lời đúng ${score} / ${quizData.length} câu!`);
+        }
+    </script>
+</body>
+</html>
